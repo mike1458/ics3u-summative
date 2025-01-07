@@ -1,0 +1,35 @@
+/* Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+* {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+}
+
+p {
+  font-weight: 400;
+}
+
+/* Background */
+body {
+  background-color: black;
+  color: white;
+}
+
+.hero {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), url('/hero-background.jpeg');
+  background-size: cover;
+  background-position: center;
+  height: 650px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  padding: 20px;
+}
