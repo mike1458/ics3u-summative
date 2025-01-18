@@ -1,6 +1,8 @@
 <script setup>
 import Header from '../components/Header.vue'
 import Footer from '../components/Footer.vue'
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../firebase";
 import { RouterLink, useRouter } from 'vue-router';
 import { useStore } from "../store";
 import { ref } from 'vue';
@@ -12,6 +14,27 @@ const lastName = ref('');
 const email = ref('');
 const password = ref('');
 const confirm = ref('');
+
+async function registerByEmail() {
+    try {
+        const user = (await createUserWithEmailAndPassword(auth, email.value, password.value)).user;
+        await updateProfile(user, { displayName: `${firstName.value} ${lastName.value}` });
+        store.user = user;
+        router.push("/movies/all");
+    } catch (error) {
+        alert("There was an error creating a user with email!");
+    }
+}
+
+async function registerByGoogle() {
+    try {
+        const user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
+        store.user = user;
+        router.push("/movies/all");
+    } catch (error) {
+        alert("There was an error creating a user with Google!");
+    }
+}
 
 const checkPasswords = () => {
     if (password.value === confirm.value) {
@@ -54,8 +77,11 @@ const checkPasswords = () => {
                         <input v-model:="confirm" type="password" placeholder="Confirm Password" class="input-field"
                             required>
                     </div>
-                    <div class="form-group">
+                    <div class="button-group">
                         <button type="submit" class="button register">Register</button>
+                        <button type="button" class="button google" @click="registerByGoogle">
+                            Register with Google
+                        </button>
                     </div>
                 </form>
             </div>
@@ -102,9 +128,17 @@ const checkPasswords = () => {
     outline: none;
 }
 
-.register {
-    background-color: #bb1515;
-    color: white;
+.button-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    /* Space between the buttons */
+    margin-top: 20px;
+}
+
+.register,
+.google {
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -113,7 +147,22 @@ const checkPasswords = () => {
     transition: background-color 0.3s, transform 0.2s;
 }
 
+.register {
+    background-color: #bb1515;
+    color: white;
+}
+
 .register:hover {
+    transform: scale(1.05);
+}
+
+.google {
+    background-color: #4285F4;
+    color: white;
+}
+
+.google:hover {
+    background-color: #357ae8;
     transform: scale(1.05);
 }
 
@@ -124,6 +173,11 @@ const checkPasswords = () => {
 
     .navbar h1 {
         font-size: 1.5rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 10px;
     }
 }
 </style>
