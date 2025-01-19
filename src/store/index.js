@@ -1,30 +1,32 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
 
 export const useStore = defineStore('store', () => {
-    const accounts = ref(new Map());
-    const currentUserEmail = ref("");
-    const email = ref("");
+    const user = ref(null);
     const cart = ref(new Map());
-    const firstName = ref("");
-    const lastName = ref("");
 
-    const addAccount = (email, details) => {
-        accounts.value.set(email, details);
-    }
+    return { cart, user };
+});
 
-    const addToCart = (id, movieData) => {
-        cart.value.set(id, movieData);
-    }
+export const userAuthorized = new Promise((resolve, reject) => {
+    onAuthStateChanged(auth, (user) => {
+        try {
+            const store = useStore();
 
-    const removeFromCart = (id) => {
-        cart.value.delete(id);
-    }
-
-    const updateNames = (newFirstName, newLastName) => {
-        firstName.value = newFirstName;
-        lastName.value = newLastName;
-    };
-
-    return { accounts, currentUserEmail, email, cart, firstName, lastName, addAccount, addToCart, removeFromCart, updateNames };
+            if (user) {
+                store.user = user;
+                const storedCart = localStorage.getItem(`cart_${store.user.email}`);
+                store.cart = storedCart ? new Map(Object.entries(JSON.parse(storedCart))) : new Map();
+                console.log("User is authorized and data is loaded.");
+                resolve();
+            } else {
+                resolve();
+            }
+        } catch (error) {
+            console.error("Error during authorization:", error);
+            reject(error);
+        }
+    });
 });

@@ -1,14 +1,16 @@
 <script setup>
 import axios from "axios";
 import { ref, onMounted } from 'vue';
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useStore } from "../store";
 
 const props = defineProps(["genres"]);
+const route = useRoute();
 const router = useRouter();
 const selectedGenre = ref(28);
 const response = ref(null);
 const store = useStore();
+
 async function getMovieByGenre() {
     response.value = await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${import.meta.env.VITE_TMDB_KEY}&with_genres=${selectedGenre.value}`);
 }
@@ -17,13 +19,26 @@ function getMovieDetails(id) {
     router.push(`/movies/${id}`)
 }
 
-function goToCart() {
-    router.push('/cart')
+function addToCart(movie, title, url) {
+    if (store.cart.has(String(movie)) || store.cart.has(movie)) {
+        return;
+    }
+    else {
+        store.cart.set(movie, { title: title, url: url })
+        localStorage.setItem(`cart_${store.user.email}`, JSON.stringify(Object.fromEntries(store.cart)));
+    }
 }
 
 onMounted(async () => {
     response.value = await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${import.meta.env.VITE_TMDB_KEY}&with_genres=${selectedGenre.value}`);
-})
+    const storedCart = localStorage.getItem(`cart_${store.user.email}`);
+    if (storedCart) {
+        store.cart = new Map(Object.entries(JSON.parse(storedCart)));
+    }
+
+});
+
+console.log(store.cart)
 </script>
 
 <template>
@@ -38,14 +53,11 @@ onMounted(async () => {
                     class="movie-poster" />
                 <p class="movie-title">{{ movie.title }}</p>
                 <button class="btn btn-success"
-                    @click.stop="store.addToCart(movie.id, { title: movie.title, url: movie.poster_path })">
-                    {{ store.cart.has(movie.id) ? "In Cart" : "Buy" }}
+                    @click.stop="addToCart(movie.id, { title: movie.title, url: movie.poster_path })">
+                    {{ store.cart.has(String(movie.id)) || store.cart.has(movie.id) ? "In Cart" : "Buy" }}
                 </button>
             </div>
         </div>
-        <button class="btn btn-success" @click.stop="goToCart">
-            {{ "Cart" }}
-        </button>
     </div>
 </template>
 

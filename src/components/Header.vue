@@ -1,23 +1,31 @@
 <script setup>
-import { computed } from 'vue';
-import { RouterLink, useRoute } from 'vue-router';
+import { computed, onMounted } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { signOut } from 'firebase/auth';
 import { useStore } from '../store';
+import { auth } from '../firebase';
 
 const route = useRoute();
+const router = useRouter();
 const store = useStore();
+let currentUserEmail = store.user?.email || '';
 
 const current = computed(() => route.path);
 const movieRoute = computed(() => route.name === "movie" || route.path.startsWith('/movies/'));
 
 const currentUserFirstName = computed(() => {
-    const userAccount = store.accounts.get(store.currentUserEmail);
-    return userAccount ? userAccount.firstName : '';
+    const userAccount = currentUserEmail;
+    const fullName = store.user.displayName.split(" ")
+    console.log(currentUserEmail)
+    return userAccount ? fullName[0] : '';
 });
 
-function logout() {
-    store.currentUserEmail = "";
-    store.cart.clear();
+const logout = () => {
+    store.user = null;
+    signOut(auth);
+    router.push(`/`);
 }
+
 </script>
 
 <template>
@@ -42,7 +50,8 @@ function logout() {
             <RouterLink v-if="movieRoute || current === '/settings' || current === '/cart' || current === '/movies'"
                 @click.prevent="logout" to="/" class="nav-button">Logout</RouterLink>
         </div>
-        <h5 v-if="store.currentUserEmail != ''" class="welcome-message"> Welcome, {{ currentUserFirstName }}! </h5>
+        <h5 v-if="store.user && currentUserFirstName" class="welcome-message"> Welcome, {{ currentUserFirstName }}!
+        </h5>
     </div>
 </template>
 

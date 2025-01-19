@@ -4,19 +4,38 @@ import Footer from '../components/Footer.vue'
 import { useStore } from '../store';
 
 const store = useStore();
+
+function removeFromCart(movie) {
+  store.cart.delete(movie);
+  localStorage.setItem(
+    `cart_${store.user.email}`,
+    JSON.stringify(Object.fromEntries(store.cart))
+  );
+}
+
+function checkout() {
+  store.cart.clear()
+  localStorage.setItem(
+    `cart_${store.user.email}`,
+    JSON.stringify(Object.fromEntries(store.cart))
+  )
+  alert("Thank you for your purchase!")
+}
+
 </script>
 
 <template>
-    <Header />
-    <div class="cart">
-        <h1>Shopping Cart</h1>
-        <div class="item" v-for="([key, value]) in store.cart">
-            <img :src="`https://image.tmdb.org/t/p/w500${value.url}`" />
-            <h1>{{ value.title }}</h1>
-            <button @click="store.cart.delete(key)">Remove</button>
-        </div>
+  <Header />
+  <div class="cart">
+    <h1>Shopping Cart</h1>
+    <div class="item" v-for="([key, value]) in store.cart">
+      <img :src="`https://image.tmdb.org/t/p/w500${value.title.url}`" />
+      <h1>{{ value.title.title }}</h1>
+      <button @click="removeFromCart(key)">Remove</button>
     </div>
-    <Footer />
+    <button class="btn btn-success" @click="checkout">Checkout</button>
+  </div>
+  <Footer />
 </template>
 
 <style scoped>

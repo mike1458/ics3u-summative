@@ -20,8 +20,9 @@ async function registerByEmail() {
         const user = (await createUserWithEmailAndPassword(auth, email.value, password.value)).user;
         await updateProfile(user, { displayName: `${firstName.value} ${lastName.value}` });
         store.user = user;
-        router.push("/movies/all");
+        router.push("/movies");
     } catch (error) {
+        console.error(error)
         alert("There was an error creating a user with email!");
     }
 }
@@ -30,7 +31,7 @@ async function registerByGoogle() {
     try {
         const user = (await signInWithPopup(auth, new GoogleAuthProvider())).user;
         store.user = user;
-        router.push("/movies/all");
+        router.push("/movies");
     } catch (error) {
         alert("There was an error creating a user with Google!");
     }
@@ -38,15 +39,7 @@ async function registerByGoogle() {
 
 const checkPasswords = () => {
     if (password.value === confirm.value) {
-        store.addAccount(email.value, {
-            firstName: firstName.value,
-            lastName: lastName.value,
-            email: email.value,
-            password: password.value
-        });
-        console.log(store.accounts);
-        store.currentUserEmail = email.value
-        router.push("/movies");
+        registerByEmail();
     }
     else {
         alert("Your passwords do not match");
@@ -133,7 +126,6 @@ const checkPasswords = () => {
     justify-content: center;
     align-items: center;
     gap: 15px;
-    /* Space between the buttons */
     margin-top: 20px;
 }
 
